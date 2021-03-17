@@ -1,5 +1,9 @@
-import 'package:cardgame/Model/lobby_room.dart';
+import 'package:cardgame/Screen/card_table.dart';
+import 'package:cardgame/shared/loading.dart';
+import 'package:cardgame/src/generated/lobby.pb.dart';
+import 'package:cardgame/src/generated/lobby.pbgrpc.dart';
 import 'package:flutter/material.dart';
+import 'package:grpc/grpc.dart';
 
 class LobbyList extends StatefulWidget {
   @override
@@ -7,38 +11,49 @@ class LobbyList extends StatefulWidget {
 }
 
 class _LobbyListState extends State<LobbyList> {
+  //
+  List<LobbyRoom> resultRoomList;
+  int resultReturnCode;
+  List<LobbyRoom> filterRoomList;
+  //tao cong goi grpc
+  LobbyClient client = LobbyClient(ClientChannel("192.168.112.99",
+      port: 5001,
+      options:
+          const ChannelOptions(credentials: ChannelCredentials.insecure())));
+  //
+  Future<int> getReturnCode() async {
+    var response = await client.askRoomList(new Empty_Request());
+    resultReturnCode = response.returnCode;
+    print('return code cua lobby $resultReturnCode');
+    return resultReturnCode;
+  }
+
+  //
+  Future<List<LobbyRoom>> getLobby() async {
+    var response = await client.askRoomList(new Empty_Request());
+    resultRoomList = response.roomList.toList();
+    print('Đã tìm thấy ${resultRoomList.length} room.');
+    return resultRoomList;
+  }
+
+  //method filler ket qua search tim lobby
   searchTile(string) {
     setState(() {
-      filter = lobby
-          .where((u) =>
-              (u.playNameList.toLowerCase().contains(string.toLowerCase())))
+      filterRoomList = resultRoomList
+          .where((u) => (u.roomId.toLowerCase().contains(string.toLowerCase())))
           .toList();
     });
   }
 
-  List<LobbyRoom> filter = [];
-  List<LobbyRoom> lobby = [
-    LobbyRoom(
-        roomId: '123',
-        playNameList: 'abc',
-        currentMemberNum: 999,
-        playerNumber: 333,
-        currentType: 111,
-        betAmount: 3213),
-    LobbyRoom(
-        roomId: '1234',
-        playNameList: 'abcdddd',
-        currentMemberNum: 9991,
-        playerNumber: 3332,
-        currentType: 1113,
-        betAmount: 32131),
-  ];
   @override
   void initState() {
     super.initState();
-    setState(() {
-      filter = lobby;
-    });
+    getLobby();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -71,20 +86,37 @@ class _LobbyListState extends State<LobbyList> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: filter.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: ListTile(
-                    onTap: () {
-                      //TODO nhay vao room game
-                    },
-                    title: Text(filter[index].playNameList),
-                  ),
-                );
-              },
-            ),
-          ),
+            child: FutureBuilder(
+                future: getReturnCode(),
+                builder: (BuildContext contex, AsyncSnapshot snapshot) {
+                  if (snapshot.data == 200) {
+                    return buildList();
+                  } else {
+                    return Loading();
+                  }
+                }),
+          )
         ]));
+  }
+
+  buildList() {
+    return ListView.builder(
+      itemCount: resultRoomList.length,
+      itemBuilder: (context, index) {
+        return Card(
+          child: ListTile(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  new MaterialPageRoute(
+                      builder: (context) => CardTable()));
+            },
+            // avata của chủ host leading: ,
+            subtitle: Text('Bet: ${resultRoomList[index].betAmount.toString()}'),
+            title: Text('Lobby Name: ${resultRoomList[index].roomId}'),
+          ),
+        );
+      },
+    );
   }
 }

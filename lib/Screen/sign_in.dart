@@ -1,7 +1,9 @@
 import 'package:cardgame/Screen/register.dart';
 import 'package:cardgame/shared/constants.dart';
 import 'package:cardgame/shared/loading.dart';
+import 'package:cardgame/src/generated/lobby.pbgrpc.dart';
 import 'package:flutter/material.dart';
+import 'package:grpc/grpc.dart';
 
 import 'card.dart';
 import 'lobbylist.dart';
@@ -14,6 +16,16 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
   final _formKey = GlobalKey<FormState>();
   bool loading = false;
+  String result;
+  // Tao cong goi grpc service
+  LobbyClient client = LobbyClient(ClientChannel("192.168.112.99",
+      port: 5001,
+      options:
+          const ChannelOptions(credentials: ChannelCredentials.insecure())));
+  Future callLogin() async {
+    var response = await client.logIn(new LogIn_Request());
+    result = response.returnCode.toString();
+  }
 
   //text field state
   String _email = "";
@@ -23,9 +35,7 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    return loading
-        ? Loading()
-        : SafeArea(
+    return SafeArea(
             child: Scaffold(
               backgroundColor: Theme.of(context).primaryColor,
               appBar: AppBar(
@@ -119,11 +129,19 @@ class _SignInState extends State<SignIn> {
                         onPressed: () async {
                           if (_formKey.currentState.validate()) {
                             //setState(() => loading = true);
-                            await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => LobbyList()));
-                            //TODO goi gRPC
+                            await callLogin();
+                            if (result == '200') {
+                              print('Returncode = $result cho phép login');
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => LobbyList()));
+                            } else {
+                              setState(() {
+                                _error = 'Đăng nhập thất bại';
+                                loading = false;
+                              });
+                            }
                           }
                         },
                         // onPressed: () async {

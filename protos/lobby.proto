@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+option csharp_namespace = "Lobby";
+
+package lobby;
+
+// The greeting service definition.
+service Lobby {
+  // Sends a greeting
+  rpc LogIn (LogIn_Request) returns (LogIn_Response);
+  rpc AskRoomList (Empty_Request) returns (AskRoomList_Response);
+  rpc AskJoinRoom (AskJoinRoom_Request) returns (AskJoinRoom_Response);
+  rpc AskCreateRoom (AskCreateRoom_Request) returns (AskCreateRoom_Response);  
+  rpc UpdateRoomList (UpdateRoomList_Request) returns (Empty_Response);
+}
+
+// The request message containing the user's name.
+
+message UserCredential {
+  string Name = 1;
+}
+
+message Empty_Request {
+  UserCredential User = 1;
+}
+message Empty_Response {
+  int32 ReturnCode = 1;
+  string ReturnMsg = 2;
+}
+
+message LogIn_Request {
+  UserCredential User = 1;
+}
+
+message AskJoinRoom_Request {
+  UserCredential User = 1;
+  string RoomId = 2;
+}
+
+message AskCreateRoom_Request {
+  UserCredential User = 1;
+  int32 CurrencyType = 2;
+  int32 BetAmount = 3;
+}
+
+message UpdateRoomList_Request {
+  UserCredential User = 1;
+  repeated LobbyRoom RoomList = 2;
+}
+
+
+// The response message containing the greetings.
+message LogIn_Response {
+  int32 ReturnCode = 1;
+  string ReturnMsg = 2;
+}
+
+
+message LobbyRoom {
+  string RoomId = 1;
+  repeated string PlayerNameList = 2;
+  int32 CurrentMemberNum = 3;
+  int32 PlayerNumber = 4;
+  int32 CurrencyType = 5;
+  int32 BetAmount = 6;
+
+
+  string UpdMode = 999;
+}
+
+message AskRoomList_Response {
+  int32 ReturnCode = 1;
+  string ReturnMsg = 2;
+  repeated LobbyRoom RoomList = 3;
+}
+
+message RoomConnetioninfo {
+  string IP = 1;
+  string Port = 2;
+  string RoomId = 3;
+}
+
+message AskJoinRoom_Response {
+  int32 ReturnCode = 1;
+  string ReturnMsg = 2;
+  RoomConnetioninfo RoomInfo = 3;
+}
+
+
+message AskCreateRoom_Response {
+  int32 ReturnCode = 1;
+  string ReturnMsg = 2;
+  RoomConnetioninfo RoomInfo = 3;
+}
