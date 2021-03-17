@@ -16,7 +16,7 @@ class _LobbyListState extends State<LobbyList> {
   int resultReturnCode;
   List<LobbyRoom> filterRoomList;
   //tao cong goi grpc
-  LobbyClient client = LobbyClient(ClientChannel("192.168.112.99",
+  LobbyClient client = LobbyClient(ClientChannel("192.168.0.7",
       port: 5001,
       options:
           const ChannelOptions(credentials: ChannelCredentials.insecure())));
@@ -106,13 +106,12 @@ class _LobbyListState extends State<LobbyList> {
         return Card(
           child: ListTile(
             onTap: () {
-              Navigator.push(
-                  context,
-                  new MaterialPageRoute(
-                      builder: (context) => CardTable()));
+              Navigator.push(context,
+                  new MaterialPageRoute(builder: (context) => CardTable()));
             },
             // avata của chủ host leading: ,
-            subtitle: Text('Bet: ${resultRoomList[index].betAmount.toString()}'),
+            subtitle:
+                Text('Bet: ${resultRoomList[index].betAmount.toString()}'),
             title: Text('Lobby Name: ${resultRoomList[index].roomId}'),
           ),
         );

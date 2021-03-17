@@ -1,7 +1,9 @@
+import 'package:cardgame/Model/hand.dart';
 import 'package:cardgame/src/generated/lobby.pb.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:playing_cards/playing_cards.dart';
+import 'package:multi_select_item/multi_select_item.dart';
 
 class CardTable extends StatefulWidget {
   // final List<LobbyRoom> resultRoomList;
@@ -11,14 +13,8 @@ class CardTable extends StatefulWidget {
 }
 
 class _CardTableState extends State<CardTable> {
-  bool _upCard = true;
-
-  double _onTapUpCard() {
-    setState(() {
-      _upCard = !_upCard;
-    });
-  }
-
+  MultiSelectController controller = new MultiSelectController();
+  List<Widget> selectedCard = [];
   @override
   void initState() {
     super.initState();
@@ -61,41 +57,25 @@ class _CardTableState extends State<CardTable> {
                   color: Colors.red,
                   width: 500,
                   child: Stack(
-                    alignment: Alignment.bottomLeft,
+                    alignment: Alignment.bottomCenter,
                     children: <Widget>[
-                      ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: 13,
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap: () {
-                                print(index);
-                              },
-                              child: Align(
+                      Container(
+                        height: 100,
+                        child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: handCard.length,
+                            itemBuilder: (context, index) {
+                              return Align(
                                 widthFactor: 0.5,
                                 alignment: Alignment.centerLeft,
-                                child: PlayingCardView(
-                                    card: PlayingCard(
-                                        Suit.diamonds, CardValue.king)),
-                              ),
-                            );
-                          }),
-                      // AnimatedPositioned(
-                      //   duration: Duration(milliseconds: 100),
-                      //   bottom: _upCard ? 0 : 10,
-                      //   left: 0,
-                      //   child: GestureDetector(
-                      //     onTap: () {
-                      //       _onTapUpCard();
-                      //     },
-                      //     child: Container(
-                      //       height: 100,
-                      //       child: PlayingCardView(
-                      //           card:
-                      //               PlayingCard(Suit.diamonds, CardValue.king)),
-                      //     ),
-                      //   ),
-                      // ),
+                                child: InkWell(
+                                    onTap: () {
+                                      print(index);
+                                    },
+                                    child: handCard[index]),
+                              );
+                            }),
+                      ),
                     ],
                   ),
                 ))
