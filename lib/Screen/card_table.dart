@@ -74,9 +74,11 @@ class _CardTableState extends State<CardTable> {
                               child: Align(
                                 widthFactor: 0.5,
                                 alignment: Alignment.centerLeft,
-                                child: PlayingCardView(
-                                    card: PlayingCard(
-                                        Suit.diamonds, CardValue.king)),
+                                child: Container(
+                                  child: PlayingCardView(
+                                      card: PlayingCard(
+                                          Suit.diamonds, CardValue.king)),
+                                ),
                               ),
                             );
                           }),
