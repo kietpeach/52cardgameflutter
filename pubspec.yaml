@@ -29,6 +29,7 @@ dependencies:
   protoc_plugin: ^20.0.0
   protobuf: ^2.0.0
   async: ^2.4.2
+  multi_select_item: ^1.0.3
 
 
   # The following adds the Cupertino Icons font to your application.
