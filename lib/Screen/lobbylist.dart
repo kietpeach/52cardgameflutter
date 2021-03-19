@@ -16,7 +16,8 @@ class _LobbyListState extends State<LobbyList> {
   int resultReturnCode;
   List<LobbyRoom> filterRoomList;
   //tao cong goi grpc
-  LobbyClient client = LobbyClient(ClientChannel("192.168.0.7",
+  LobbyClient client = LobbyClient(ClientChannel("192.168.112.99",
+  //LobbyClient client = LobbyClient(ClientChannel("192.168.0.7",
       port: 5001,
       options:
           const ChannelOptions(credentials: ChannelCredentials.insecure())));

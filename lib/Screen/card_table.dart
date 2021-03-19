@@ -13,8 +13,18 @@ class CardTable extends StatefulWidget {
 }
 
 class _CardTableState extends State<CardTable> {
-  MultiSelectController controller = new MultiSelectController();
-  List<Widget> selectedCard = [];
+  //
+  bool _disableCard = false;
+  bool _upCard = false;
+  double _up;
+  void _onTapUpCard(int index) {
+    setState(() {
+      _upCard = !_upCard;
+      _up = 20;
+    });
+  }
+
+  //
   @override
   void initState() {
     super.initState();
@@ -41,72 +51,98 @@ class _CardTableState extends State<CardTable> {
     return Scaffold(
         appBar: AppBar(title: Text('truyen ten room vao')),
         backgroundColor: Colors.white,
-        body: Column(
-          children: [
-            Expanded(
-              flex: 2,
-              child: Container(
-                decoration: BoxDecoration(
-                    color: Colors.lightGreen,
-                    borderRadius: BorderRadius.circular(80)),
+        body: Container(
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage('assets/sc.jpg'), fit: BoxFit.fill)),
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: 10,
+                //child: Container(color: Colors.red,),
               ),
-            ),
-            Expanded(
-                flex: 1,
-                child: Container(
-                  color: Colors.red,
-                  width: 500,
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: <Widget>[
-                      Container(
-                        height: 100,
-                        child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: handCard.length,
-                            itemBuilder: (context, index) {
-                              return Align(
-                                widthFactor: 0.5,
-                                alignment: Alignment.centerLeft,
-<<<<<<< HEAD
-                                child: Container(
-                                  child: PlayingCardView(
-                                      card: PlayingCard(
-                                          Suit.diamonds, CardValue.king)),
-                                ),
-                              ),
-                            );
-                          }),
-                      // AnimatedPositioned(
-                      //   duration: Duration(milliseconds: 100),
-                      //   bottom: _upCard ? 0 : 10,
-                      //   left: 0,
-                      //   child: GestureDetector(
-                      //     onTap: () {
-                      //       _onTapUpCard();
-                      //     },
-                      //     child: Container(
-                      //       height: 100,
-                      //       child: PlayingCardView(
-                      //           card:
-                      //               PlayingCard(Suit.diamonds, CardValue.king)),
-                      //     ),
-                      //   ),
-                      // ),
-=======
-                                child: InkWell(
-                                    onTap: () {
-                                      print(index);
-                                    },
-                                    child: handCard[index]),
-                              );
-                            }),
+              //board
+              Expanded(
+                child: Stack(
+                  children: [
+                    AnimatedAlign(
+                      duration: Duration(milliseconds: 100),
+                      alignment: Alignment(-1,1),
+                      child: SizedBox(
+                        height: 80,
+                        width: 60,
+                        child: Container(
+                          child: handCard[0],
+                        ),
                       ),
->>>>>>> 5020de76ac57537a70552914b152b43dd4915590
-                    ],
-                  ),
-                ))
-          ],
+                    ),
+                     AnimatedAlign(
+                      duration: Duration(milliseconds: 100),
+                      alignment: Alignment(-0.9,1),
+                      child: SizedBox(
+                        height: 80,
+                        width: 60,
+                        child: Container(
+                          child: handCard[1],
+                        ),
+                      ),
+                    ),
+                     AnimatedAlign(
+                      duration: Duration(milliseconds: 100),
+                      alignment: Alignment(-0.8,0.9),
+                      child: SizedBox(
+                        height: 80,
+                        width: 60,
+                        child: Container(
+                          child: handCard[2],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              //
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(onPressed: () {}, child: Text('Skip')),
+                  ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          handCard = handCard.reversed.toList();
+                        });
+                      },
+                      child: Text('Sort')),
+                  ElevatedButton(
+                      onPressed: () {
+                        if (_upCard) {
+                          setState(() {
+                            _up = 100;
+                            _disableCard = true;
+                          });
+                        }
+                      },
+                      child: Text('Hit')),
+                ],
+              )
+            ],
+          ),
+        ));
+  }
+
+  _buildListHand(int index) {
+    return AnimatedPositioned(
+        left: 0,
+        duration: Duration(milliseconds: 100),
+        bottom: _upCard ? _up : 0,
+        child: AbsorbPointer(
+          absorbing: _disableCard,
+          child: InkWell(
+              onTap: () {
+                print('dasdas');
+                _onTapUpCard(index);
+              },
+              child: Container(height: 80, width: 60, child: handCard[index])),
         ));
   }
 }

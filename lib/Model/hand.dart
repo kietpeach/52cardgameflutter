@@ -1,12 +1,7 @@
-<<<<<<< HEAD
-import 'package:flutter/material.dart';
-
- 
-=======
 import 'package:flutter/cupertino.dart';
 import 'package:playing_cards/playing_cards.dart';
 
-final handCard = <Widget>[
+dynamic handCard = <Widget>[
   PlayingCardView(card: PlayingCard(Suit.diamonds, CardValue.king)),
   PlayingCardView(card: PlayingCard(Suit.diamonds, CardValue.queen)),
   PlayingCardView(card: PlayingCard(Suit.clubs, CardValue.ace)),
@@ -21,4 +16,3 @@ final handCard = <Widget>[
   PlayingCardView(card: PlayingCard(Suit.spades, CardValue.four)),
   PlayingCardView(card: PlayingCard(Suit.diamonds, CardValue.five)),
 ];
->>>>>>> 5020de76ac57537a70552914b152b43dd4915590
