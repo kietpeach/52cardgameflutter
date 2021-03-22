@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+option csharp_namespace = "GameTable";
+
+package gametable;
+
+// The greeting service definition.
+service GameTable {
+  // Sends a greeting
+  rpc AskCreateRoom (AskCreateRoom_Request) returns (Empty_Response);  
+  rpc AskJoinRoom (String_Request) returns (Empty_Response);  
+  rpc GetRoomInfo (String_Request) returns (GetRoomInfo_Response);  
+}
+
+// The request message containing the user's name.
+
+message UserCredential {
+  string Name = 1;
+}
+
+
+message String_Request {
+  UserCredential User = 1;
+  string StringInput = 4;
+}
+
+message AskCreateRoom_Request {
+  UserCredential User = 1;
+  int32 CurrencyType = 2;
+  int32 BetAmount = 3;
+  string RoomId = 4;
+}
+
+
+// The response message containing the greetings.
+
+message Empty_Response {
+  int32 ReturnCode = 1;
+  string ReturnMsg = 2;
+}
+
+message RoomInfo {
+  string RoomId = 1;
+  repeated string PlayerNameList = 2;
+  int32 CurrentMemberNum = 3;
+  int32 PlayerNumber = 4;
+  int32 CurrencyType = 5;
+  int32 BetAmount = 6;
+
+  
+  string UpdMode = 999;
+}
+
+message GetRoomInfo_Response {
+  int32 ReturnCode = 1;
+  string ReturnMsg = 2;
+  RoomInfo Room = 3;
+}
+
