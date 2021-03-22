@@ -18,8 +18,8 @@ class _SignInState extends State<SignIn> {
   bool loading = false;
   String result;
   // Tao cong goi grpc service
-  LobbyClient client = LobbyClient(ClientChannel("192.168.112.99",
-  //LobbyClient client = LobbyClient(ClientChannel("192.168.0.7",
+  //LobbyClient client = LobbyClient(ClientChannel("192.168.112.99",
+  LobbyClient client = LobbyClient(ClientChannel("192.168.0.3",
       port: 5001,
       options:
           const ChannelOptions(credentials: ChannelCredentials.insecure())));

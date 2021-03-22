@@ -6,14 +6,16 @@ import 'package:playing_cards/playing_cards.dart';
 import 'package:multi_select_item/multi_select_item.dart';
 
 class CardTable extends StatefulWidget {
-  // final List<LobbyRoom> resultRoomList;
-  // CardTable(this.resultRoomList);
+  String value;
+  CardTable({this.value});
   @override
-  _CardTableState createState() => _CardTableState();
+  _CardTableState createState() => _CardTableState(value);
 }
 
 class _CardTableState extends State<CardTable> {
   //
+  String value;
+  _CardTableState(this.value);
   bool _disableCard = false;
   bool _upCard = false;
   double _up;
@@ -49,7 +51,7 @@ class _CardTableState extends State<CardTable> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('truyen ten room vao')),
+        appBar: AppBar(title: Text(value)),
         backgroundColor: Colors.white,
         body: Container(
           decoration: BoxDecoration(
@@ -67,7 +69,7 @@ class _CardTableState extends State<CardTable> {
                   children: [
                     AnimatedAlign(
                       duration: Duration(milliseconds: 100),
-                      alignment: Alignment(-1,1),
+                      alignment: Alignment(-1, 1),
                       child: SizedBox(
                         height: 80,
                         width: 60,
@@ -76,9 +78,9 @@ class _CardTableState extends State<CardTable> {
                         ),
                       ),
                     ),
-                     AnimatedAlign(
+                    AnimatedAlign(
                       duration: Duration(milliseconds: 100),
-                      alignment: Alignment(-0.9,1),
+                      alignment: Alignment(-0.9, 1),
                       child: SizedBox(
                         height: 80,
                         width: 60,
@@ -87,9 +89,9 @@ class _CardTableState extends State<CardTable> {
                         ),
                       ),
                     ),
-                     AnimatedAlign(
+                    AnimatedAlign(
                       duration: Duration(milliseconds: 100),
-                      alignment: Alignment(-0.8,0.9),
+                      alignment: Alignment(-0.8, 0.9),
                       child: SizedBox(
                         height: 80,
                         width: 60,

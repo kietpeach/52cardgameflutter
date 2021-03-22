@@ -13,20 +13,19 @@ class LobbyList extends StatefulWidget {
 class _LobbyListState extends State<LobbyList> {
   //
   List<LobbyRoom> resultRoomList;
-  int resultReturnCode;
+  // TODO chưa làm Search tìm tên room
   List<LobbyRoom> filterRoomList;
   //tao cong goi grpc
-  LobbyClient client = LobbyClient(ClientChannel("192.168.112.99",
-  //LobbyClient client = LobbyClient(ClientChannel("192.168.0.7",
+  //LobbyClient client = LobbyClient(ClientChannel("192.168.112.99",
+  LobbyClient client = LobbyClient(ClientChannel("192.168.0.3",
       port: 5001,
       options:
           const ChannelOptions(credentials: ChannelCredentials.insecure())));
   //
-  Future<int> getReturnCode() async {
+  Future<int> getReturnCodeAskRoomList() async {
     var response = await client.askRoomList(new Empty_Request());
-    resultReturnCode = response.returnCode;
-    print('return code cua lobby $resultReturnCode');
-    return resultReturnCode;
+    print('return code của AskRoomList: ${response.returnCode}');
+    return response.returnCode;
   }
 
   //
@@ -34,7 +33,24 @@ class _LobbyListState extends State<LobbyList> {
     var response = await client.askRoomList(new Empty_Request());
     resultRoomList = response.roomList.toList();
     print('Đã tìm thấy ${resultRoomList.length} room.');
+    print(resultRoomList);
     return resultRoomList;
+  }
+
+  //
+  Future<int> getReturnCodeAskCreateRoom() async {
+    var response = await client.askCreateRoom(new AskCreateRoom_Request(
+      betAmount: 100,
+      currencyType: 1,
+    ));
+    print('return code của AskCreateRoom: ${response.returnCode}');
+    return response.returnCode;
+  }
+
+  Future<RoomConnetioninfo> getCreateLobby() async {
+    var response = await client.askCreateRoom(new AskCreateRoom_Request());
+    print(response.roomInfo.iP.toString());
+    return response.roomInfo;
   }
 
   //method filler ket qua search tim lobby
@@ -46,17 +62,20 @@ class _LobbyListState extends State<LobbyList> {
     });
   }
 
+//
   @override
   void initState() {
     super.initState();
     getLobby();
   }
 
+//
   @override
   void dispose() {
     super.dispose();
   }
 
+//
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,6 +87,7 @@ class _LobbyListState extends State<LobbyList> {
           elevation: 0,
         ),
         body: Column(mainAxisSize: MainAxisSize.max, children: [
+          // Thanh search bar
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: TextField(
@@ -86,9 +106,10 @@ class _LobbyListState extends State<LobbyList> {
                       borderRadius: BorderRadius.all(Radius.circular(10)))),
             ),
           ),
+          // List room
           Expanded(
             child: FutureBuilder(
-                future: getReturnCode(),
+                future: getReturnCodeAskRoomList(),
                 builder: (BuildContext contex, AsyncSnapshot snapshot) {
                   if (snapshot.data == 200) {
                     return buildList();
@@ -96,7 +117,15 @@ class _LobbyListState extends State<LobbyList> {
                     return Loading();
                   }
                 }),
-          )
+          ),
+          //Button create room
+          ElevatedButton(
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.redAccent)),
+              child: Text('Create Lobby'),
+              onPressed: () {
+                getReturnCodeAskCreateRoom();
+              })
         ]));
   }
 
@@ -107,8 +136,11 @@ class _LobbyListState extends State<LobbyList> {
         return Card(
           child: ListTile(
             onTap: () {
-              Navigator.push(context,
-                  new MaterialPageRoute(builder: (context) => CardTable()));
+              Navigator.push(
+                  context,
+                  new MaterialPageRoute(
+                      builder: (context) => CardTable(
+                          value: resultRoomList[index].roomId.toString())));
             },
             // avata của chủ host leading: ,
             subtitle:
