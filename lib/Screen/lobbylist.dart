@@ -15,14 +15,20 @@ class LobbyList extends StatefulWidget {
 class _LobbyListState extends State<LobbyList> {
   //
   List<LobbyRoom> resultRoomList;
-  RoomConnetioninfo resultCreateLobby;
+  LobbyRoom resultRoom;
+  int returnCodeCreateLobby;
+  int returnCodeJoinLobby;
+  String resultCreateLobby;
   // TODO chưa làm Search tìm tên room
   List<LobbyRoom> filterRoomList;
   //Tạo cỗng gọi gRPC
-  GameTableClient clientGameTable = GameTableClient(ClientChannel("192.168.112.99",
+  //Cỗng gọi gametable:
+  GameTableClient clientGameTable = GameTableClient(ClientChannel(
+      "192.168.112.99",
       port: 5002,
       options:
           const ChannelOptions(credentials: ChannelCredentials.insecure())));
+  //Cỗng gọi Lobby:
   LobbyClient clientLobby = LobbyClient(ClientChannel("192.168.112.99",
       //LobbyClient client = LobbyClient(ClientChannel("192.168.0.3",
       port: 5001,
@@ -45,36 +51,46 @@ class _LobbyListState extends State<LobbyList> {
   }
 
   // Tạo lobby
-  Future<int> getReturnCodeAskCreateRoom() async {
-    var response = await clientLobby.askCreateRoom(new lobby.AskCreateRoom_Request(
+  Future<int> getReturnCodeCreateLobby() async {
+    var response =
+        await clientLobby.askCreateRoom(new lobby.AskCreateRoom_Request(
       betAmount: 1300,
       currencyType: 1,
     ));
-    print('return code của AskCreateRoom: ${response.returnCode}');
-    return response.returnCode;
-  }
-
-  Future<RoomConnetioninfo> getCreateLobby() async {
-    var response = await clientLobby.askCreateRoom(new lobby.AskCreateRoom_Request());
-    resultCreateLobby = response.roomInfo;
-    print(response.roomInfo.iP.toString());
-    print(response.roomInfo.port.toString());
-    print(response.roomInfo.roomId.toString());
-    return resultCreateLobby;
+    returnCodeCreateLobby = response.returnCode;
+    resultCreateLobby = response.roomInfo.roomId.toString();
+    print(
+        'return code của AskCreateRoom: ${response.returnCode} return msg: ${response.returnMsg}');
+    print('Đã tạo lobby có ${response.roomInfo}');
+    return returnCodeCreateLobby;
   }
 
   // Update list lobby
   Future<int> updateLobby() async {
-    var response = await clientLobby.updateRoomList(new UpdateRoomList_Request());
+    var response =
+        await clientLobby.updateRoomList(new UpdateRoomList_Request());
     print('return code cua update ${response.returnCode}');
     return response.returnCode;
   }
 
-  // Join lobby from table
-  Future<int> getReturnCodeAskJoinRoom() async {
-    var response = await clientGameTable.askJoinRoom(new String_Request());
-    print('return code cua join ${response.returnCode}-return msg:${response.returnMsg}');
+  //Join lobby from lobby
+  Future<int> getAskJoinRoomLobby(int index) async {
+    var response = await clientLobby.askJoinRoom(
+        new lobby.AskJoinRoom_Request(roomId: resultRoomList[index].roomId));
+    print('Đã chọn lobby: ${resultRoomList[index].roomId}');
+    print(
+        'return code cua join lobby ${response.returnCode} return msg:${response.returnMsg}');
     return response.returnCode;
+  }
+
+  // Join lobby from gametable
+  Future<int> getAskJoinRoomTable() async {
+    var response = await clientGameTable
+        .askJoinRoom(new String_Request(stringInput: resultCreateLobby));
+    returnCodeJoinLobby = response.returnCode;
+    print(
+        'return code cua join gametable ${response.returnCode}-return msg:${response.returnMsg}');
+    return returnCodeJoinLobby;
   }
 
   //method filler ket qua search tim lobby
@@ -154,16 +170,19 @@ class _LobbyListState extends State<LobbyList> {
                     backgroundColor:
                         MaterialStateProperty.all(Colors.redAccent)),
                 child: Text('Create Lobby'),
-                onPressed: () {
-                  FutureBuilder(
-                    future: getReturnCodeAskCreateRoom(),
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.data == 200) {
-                        getCreateLobby();
-                        getReturnCodeAskJoinRoom();
-                      }
-                    },
-                  );
+                onPressed: () async {
+                  await getReturnCodeCreateLobby();
+                  if (returnCodeCreateLobby == 200) {
+                    await getAskJoinRoomTable();
+                    if (returnCodeJoinLobby == 200) {
+                      Navigator.push(
+                          context,
+                          new MaterialPageRoute(
+                              builder: (context) => CardTable(
+                                    value: resultCreateLobby,
+                                  )));
+                    }
+                  }
                 })
           ]),
         ));
@@ -176,19 +195,12 @@ class _LobbyListState extends State<LobbyList> {
         return Card(
           child: ListTile(
             onTap: () {
-              FutureBuilder(
-                future: getReturnCodeAskJoinRoom(),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.data == 200) {
-                    Navigator.push(
-                        context,
-                        new MaterialPageRoute(
-                            builder: (context) => CardTable(
-                                value:
-                                    resultRoomList[index].roomId.toString())));
-                  }
-                },
-              );
+              getAskJoinRoomLobby(index);
+              // Navigator.push(
+              //     context,
+              //     new MaterialPageRoute(
+              //         builder: (context) => CardTable(
+              //             value: resultRoomList[index].roomId.toString())));
             },
             // avata của chủ host leading: ,
             subtitle:
