@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:cardgame/Screen/card_table.dart';
 import 'package:cardgame/shared/loading.dart';
 import 'package:cardgame/src/generated/gametable.pbgrpc.dart';
@@ -15,12 +17,15 @@ class LobbyList extends StatefulWidget {
 class _LobbyListState extends State<LobbyList> {
   //
   List<LobbyRoom> resultRoomList;
-  LobbyRoom resultRoom;
+  RoomConnetioninfo resultJoinRoom;
   int returnCodeCreateLobby;
-  int returnCodeJoinLobby;
+  int returnCodeJoinFromTableWhenCreate;
+  int returnCodeJoinFromTableWhenLobby;
+  int returnCodeJoinFromLobby;
   String resultCreateLobby;
-  // TODO chưa làm Search tìm tên room
+  int resultBetAmount;
   List<LobbyRoom> filterRoomList;
+  TextEditingController customBetAmount = TextEditingController();
   //Tạo cỗng gọi gRPC
   //Cỗng gọi gametable:
   GameTableClient clientGameTable = GameTableClient(ClientChannel(
@@ -45,6 +50,7 @@ class _LobbyListState extends State<LobbyList> {
   Future<List<LobbyRoom>> getLobby() async {
     var response = await clientLobby.askRoomList(new Empty_Request());
     resultRoomList = response.roomList.toList();
+    filterRoomList = response.roomList.toList();
     print('Đã tìm thấy ${resultRoomList.length} room.');
     print(resultRoomList);
     return resultRoomList;
@@ -54,11 +60,11 @@ class _LobbyListState extends State<LobbyList> {
   Future<int> getReturnCodeCreateLobby() async {
     var response =
         await clientLobby.askCreateRoom(new lobby.AskCreateRoom_Request(
-      betAmount: 1300,
-      currencyType: 1,
+      betAmount: int.parse(customBetAmount.text),
+      //currencyType: 1,
     ));
     returnCodeCreateLobby = response.returnCode;
-    resultCreateLobby = response.roomInfo.roomId.toString();
+    resultCreateLobby = response.roomInfo.roomId;
     print(
         'return code của AskCreateRoom: ${response.returnCode} return msg: ${response.returnMsg}');
     print('Đã tạo lobby có ${response.roomInfo}');
@@ -77,29 +83,68 @@ class _LobbyListState extends State<LobbyList> {
   Future<int> getAskJoinRoomLobby(int index) async {
     var response = await clientLobby.askJoinRoom(
         new lobby.AskJoinRoom_Request(roomId: resultRoomList[index].roomId));
+    returnCodeJoinFromLobby = response.returnCode;
+    resultJoinRoom = response.roomInfo;
     print('Đã chọn lobby: ${resultRoomList[index].roomId}');
     print(
         'return code cua join lobby ${response.returnCode} return msg:${response.returnMsg}');
-    return response.returnCode;
+    return returnCodeJoinFromLobby;
   }
 
   // Join lobby from gametable
-  Future<int> getAskJoinRoomTable() async {
+  Future<int> getAskJoinRoomTableWhenCreate() async {
     var response = await clientGameTable
         .askJoinRoom(new String_Request(stringInput: resultCreateLobby));
-    returnCodeJoinLobby = response.returnCode;
+    returnCodeJoinFromTableWhenCreate = response.returnCode;
     print(
         'return code cua join gametable ${response.returnCode}-return msg:${response.returnMsg}');
-    return returnCodeJoinLobby;
+    return returnCodeJoinFromTableWhenCreate;
   }
 
-  //method filler ket qua search tim lobby
+  Future<int> getAskJoinRoomTableWhenLobby() async {
+    var response = await clientGameTable
+        .askJoinRoom(new String_Request(stringInput: resultJoinRoom.roomId));
+    returnCodeJoinFromTableWhenLobby = response.returnCode;
+    return returnCodeJoinFromTableWhenLobby;
+  }
+
+  //method filler kết quả search tìm lobby theo tên hoặc giá cược
   searchTile(string) {
     setState(() {
       filterRoomList = resultRoomList
-          .where((u) => (u.roomId.toLowerCase().contains(string.toLowerCase())))
+          .where((u) =>
+              (u.roomId.toLowerCase().contains(string.toLowerCase()) ||
+                  u.betAmount.toString().contains(string.toLowerCase())))
           .toList();
     });
+  }
+
+  //method popup bảng tạo lobby
+  Future<int> createPopup(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Bet Amount'),
+            content: TextField(
+              decoration: InputDecoration(icon: Icon(Icons.attach_money)),
+              keyboardType: TextInputType.number,
+              controller: customBetAmount,
+            ),
+            actions: <Widget>[
+              MaterialButton(
+                  elevation: 5.0,
+                  child: Text('Create'),
+                  onPressed: () {
+                    if (customBetAmount != null) {
+                      Navigator.of(context)
+                          .pop(int.parse(customBetAmount.text));
+                          bool x =true; //TODO
+                    }
+                  })
+            ],
+          );
+        });
   }
 
 //
@@ -140,8 +185,8 @@ class _LobbyListState extends State<LobbyList> {
                 onChanged: (string) => searchTile(string),
                 decoration: InputDecoration(
                     prefixIcon: Icon(Icons.search, size: 30),
-                    hintText: 'Search...',
-                    hintStyle: TextStyle(fontSize: 17),
+                    hintText: 'Search...(type lobby name or bet to find)',
+                    hintStyle: TextStyle(fontSize: 17, color: Colors.grey),
                     fillColor: Colors.grey[300],
                     filled: true,
                     enabledBorder: OutlineInputBorder(
@@ -170,19 +215,22 @@ class _LobbyListState extends State<LobbyList> {
                     backgroundColor:
                         MaterialStateProperty.all(Colors.redAccent)),
                 child: Text('Create Lobby'),
-                onPressed: () async {
-                  await getReturnCodeCreateLobby();
-                  if (returnCodeCreateLobby == 200) {
-                    await getAskJoinRoomTable();
-                    if (returnCodeJoinLobby == 200) {
-                      Navigator.push(
-                          context,
-                          new MaterialPageRoute(
-                              builder: (context) => CardTable(
-                                    value: resultCreateLobby,
-                                  )));
+                onPressed: () {
+                  createPopup(context).then((onValue) async {
+                    await getReturnCodeCreateLobby();
+                    if (returnCodeCreateLobby == 200) {
+                      await getAskJoinRoomTableWhenCreate();
+                      if (returnCodeJoinFromTableWhenCreate == 200) {
+                        Navigator.push(
+                            context,
+                            new MaterialPageRoute(
+                                builder: (context) => CardTable(
+                                      roomID: resultCreateLobby,
+                                      betAmount: onValue,
+                                    )));
+                      }
                     }
-                  }
+                  });
                 })
           ]),
         ));
@@ -190,22 +238,30 @@ class _LobbyListState extends State<LobbyList> {
 
   buildList() {
     return ListView.builder(
-      itemCount: resultRoomList.length,
+      itemCount: filterRoomList.length,
       itemBuilder: (context, index) {
         return Card(
           child: ListTile(
-            onTap: () {
-              getAskJoinRoomLobby(index);
-              // Navigator.push(
-              //     context,
-              //     new MaterialPageRoute(
-              //         builder: (context) => CardTable(
-              //             value: resultRoomList[index].roomId.toString())));
+            onTap: () async {
+              await getAskJoinRoomLobby(index);
+              if (returnCodeJoinFromLobby == 200) {
+                print(resultJoinRoom.roomId);
+                await getAskJoinRoomTableWhenLobby();
+                if (returnCodeJoinFromTableWhenLobby == 200) {
+                  Navigator.push(
+                      context,
+                      new MaterialPageRoute(
+                          builder: (context) => CardTable(
+                                roomID: resultRoomList[index].roomId.toString(),
+                                betAmount: resultRoomList[index].betAmount,
+                              )));
+                }
+              }
             },
             // avata của chủ host leading: ,
             subtitle:
-                Text('Bet: ${resultRoomList[index].betAmount.toString()}'),
-            title: Text('Lobby Name: ${resultRoomList[index].roomId}'),
+                Text('Bet: ${filterRoomList[index].betAmount.toString()}'),
+            title: Text('Lobby Name: ${filterRoomList[index].roomId}'),
           ),
         );
       },

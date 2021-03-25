@@ -6,23 +6,64 @@ import 'package:playing_cards/playing_cards.dart';
 import 'package:multi_select_item/multi_select_item.dart';
 
 class CardTable extends StatefulWidget {
-  String value;
-  CardTable({this.value});
+  String roomID;
+  int betAmount;
+  CardTable({this.roomID, this.betAmount});
   @override
-  _CardTableState createState() => _CardTableState(value);
+  _CardTableState createState() => _CardTableState(roomID, betAmount);
 }
 
 class _CardTableState extends State<CardTable> {
   //
-  String value;
-  _CardTableState(this.value);
+  String roomID;
+  int betAmount;
+  _CardTableState(this.roomID, this.betAmount);
+  List<bool> up = [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ];
+  List<double> x = [
+    -0.6,
+    -0.5,
+    -0.4,
+    -0.3,
+    -0.2,
+    -0.1,
+    0,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6
+  ];
+  List<double> y = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
   bool _disableCard = false;
-  bool _upCard = false;
-  double _up;
-  void _onTapUpCard(int index) {
+  //
+  void onTapUp(int index) {
     setState(() {
-      _upCard = !_upCard;
-      _up = 20;
+      up[index] = !up[index];
+    });
+  }
+
+//
+  void hitCard(index) {
+    setState(() {
+      if (up[index]) {
+        x[index] = 0;
+        y[index] = 0;
+      }
     });
   }
 
@@ -51,7 +92,7 @@ class _CardTableState extends State<CardTable> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(value)),
+        appBar: AppBar(title: Text('ID:$roomID Bet:$betAmount')),
         backgroundColor: Colors.white,
         body: Container(
           decoration: BoxDecoration(
@@ -67,39 +108,23 @@ class _CardTableState extends State<CardTable> {
               Expanded(
                 child: Stack(
                   children: [
-                    AnimatedAlign(
-                      duration: Duration(milliseconds: 100),
-                      alignment: Alignment(-1, 1),
-                      child: SizedBox(
-                        height: 80,
-                        width: 60,
-                        child: Container(
-                          child: handCard[0],
+                    for (int i = 0; i < 13; i++)
+                      AnimatedAlign(
+                        duration: Duration(milliseconds: 100),
+                        alignment: Alignment(x[i], up[i] ? (y[i] - 0.1) : y[i]),
+                        child: SizedBox(
+                          height: 80,
+                          width: 60,
+                          child: GestureDetector(
+                            onTap: () {
+                              onTapUp(i);
+                            },
+                            child: Container(
+                              child: handCard[i],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    AnimatedAlign(
-                      duration: Duration(milliseconds: 100),
-                      alignment: Alignment(-0.9, 1),
-                      child: SizedBox(
-                        height: 80,
-                        width: 60,
-                        child: Container(
-                          child: handCard[1],
-                        ),
-                      ),
-                    ),
-                    AnimatedAlign(
-                      duration: Duration(milliseconds: 100),
-                      alignment: Alignment(-0.8, 0.9),
-                      child: SizedBox(
-                        height: 80,
-                        width: 60,
-                        child: Container(
-                          child: handCard[2],
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -117,34 +142,19 @@ class _CardTableState extends State<CardTable> {
                       child: Text('Sort')),
                   ElevatedButton(
                       onPressed: () {
-                        if (_upCard) {
+                        for (int i = 0; i < 13; i++)
                           setState(() {
-                            _up = 100;
-                            _disableCard = true;
+                            if (up[i]) {
+                              x[i] = 0;
+                              y[i] = 0;
+                            }
                           });
-                        }
                       },
                       child: Text('Hit')),
                 ],
               )
             ],
           ),
-        ));
-  }
-
-  _buildListHand(int index) {
-    return AnimatedPositioned(
-        left: 0,
-        duration: Duration(milliseconds: 100),
-        bottom: _upCard ? _up : 0,
-        child: AbsorbPointer(
-          absorbing: _disableCard,
-          child: InkWell(
-              onTap: () {
-                print('dasdas');
-                _onTapUpCard(index);
-              },
-              child: Container(height: 80, width: 60, child: handCard[index])),
         ));
   }
 }
