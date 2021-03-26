@@ -29,12 +29,12 @@ class _LobbyListState extends State<LobbyList> {
   //Tạo cỗng gọi gRPC
   //Cỗng gọi gametable:
   GameTableClient clientGameTable = GameTableClient(ClientChannel(
-      "192.168.112.99",
+      '192.168.112.99',
       port: 5002,
       options:
           const ChannelOptions(credentials: ChannelCredentials.insecure())));
   //Cỗng gọi Lobby:
-  LobbyClient clientLobby = LobbyClient(ClientChannel("192.168.112.99",
+  LobbyClient clientLobby = LobbyClient(ClientChannel('192.168.112.99',
       //LobbyClient client = LobbyClient(ClientChannel("192.168.0.3",
       port: 5001,
       options:

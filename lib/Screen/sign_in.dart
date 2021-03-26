@@ -17,9 +17,11 @@ class _SignInState extends State<SignIn> {
   final _formKey = GlobalKey<FormState>();
   bool loading = false;
   String result;
+  static String ipp = '192.168.112.99';
+  //TextEditingController ip = TextEditingController();
   // Tao cong goi grpc service
-  LobbyClient client = LobbyClient(ClientChannel("192.168.112.99",
-  //LobbyClient client = LobbyClient(ClientChannel("192.168.0.3",
+  LobbyClient client = LobbyClient(ClientChannel(ipp,
+      //LobbyClient client = LobbyClient(ClientChannel("192.168.0.3",
       port: 5001,
       options:
           const ChannelOptions(credentials: ChannelCredentials.insecure())));
@@ -27,6 +29,10 @@ class _SignInState extends State<SignIn> {
     var response = await client.logIn(new LogIn_Request());
     result = response.returnCode.toString();
   }
+
+  // ganIP() {
+  //   ipp = ip.text.toString();
+  // }
 
   //text field state
   String _email = "";
@@ -113,6 +119,21 @@ class _SignInState extends State<SignIn> {
                         )),
                   )
                 ]),
+                // SizedBox(
+                //   height: 20.0,
+                // ),
+                // TextFormField(
+                //   decoration: textInputDecoration.copyWith(labelText: 'IP:'),
+                //   controller: ip,
+                // ),
+                // Container(
+                //     color: Colors.red,
+                //     child: TextButton(
+                //         onPressed: () {
+                //           ganIP();
+                //           print('$ipp');
+                //         },
+                //         child: Text('Gán IP'))),
                 Spacer(),
                 RaisedButton(
                   color: Colors.red,
@@ -121,6 +142,7 @@ class _SignInState extends State<SignIn> {
                     style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
                   onPressed: () async {
+                    //ipp='192.168.112.99';
                     if (_formKey.currentState.validate()) {
                       //setState(() => loading = true);
                       await callLogin();
