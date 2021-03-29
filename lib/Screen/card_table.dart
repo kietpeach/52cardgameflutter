@@ -6,6 +6,7 @@ import 'package:playing_cards/playing_cards.dart';
 import 'package:multi_select_item/multi_select_item.dart';
 
 class CardTable extends StatefulWidget {
+  // Biến truyền từ trang lobby
   String roomID;
   int betAmount;
   CardTable({this.roomID, this.betAmount});
@@ -14,10 +15,11 @@ class CardTable extends StatefulWidget {
 }
 
 class _CardTableState extends State<CardTable> {
-  //
+  // Biến truyền từ trang lobby
   String roomID;
   int betAmount;
   _CardTableState(this.roomID, this.betAmount);
+  //
   List<bool> up = [
     false,
     false,

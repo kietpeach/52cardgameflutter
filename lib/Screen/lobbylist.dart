@@ -10,11 +10,17 @@ import 'package:flutter/material.dart';
 import 'package:grpc/grpc.dart';
 
 class LobbyList extends StatefulWidget {
+  // Biến truyền từ trang sign in
+  final String ip;
+  const LobbyList({Key key, this.ip}) : super(key: key);
   @override
-  _LobbyListState createState() => _LobbyListState();
+  _LobbyListState createState() => _LobbyListState(ip);
 }
 
 class _LobbyListState extends State<LobbyList> {
+  // Biến truyền từ trang sign in
+  final String ip;
+  _LobbyListState(this.ip);
   //
   List<LobbyRoom> resultRoomList;
   RoomConnetioninfo resultJoinRoom;
@@ -23,22 +29,11 @@ class _LobbyListState extends State<LobbyList> {
   int returnCodeJoinFromTableWhenLobby;
   int returnCodeJoinFromLobby;
   String resultCreateLobby;
-  int resultBetAmount;
   List<LobbyRoom> filterRoomList;
   TextEditingController customBetAmount = TextEditingController();
-  //Tạo cỗng gọi gRPC
-  //Cỗng gọi gametable:
-  GameTableClient clientGameTable = GameTableClient(ClientChannel(
-      '192.168.112.99',
-      port: 5002,
-      options:
-          const ChannelOptions(credentials: ChannelCredentials.insecure())));
-  //Cỗng gọi Lobby:
-  LobbyClient clientLobby = LobbyClient(ClientChannel('192.168.112.99',
-      //LobbyClient client = LobbyClient(ClientChannel("192.168.0.3",
-      port: 5001,
-      options:
-          const ChannelOptions(credentials: ChannelCredentials.insecure())));
+  //
+  GameTableClient clientGameTable;
+  LobbyClient clientLobby;
   // Hiển thị list lobby
   Future<int> getReturnCodeAskRoomList() async {
     var response = await clientLobby.askRoomList(new Empty_Request());
@@ -139,7 +134,7 @@ class _LobbyListState extends State<LobbyList> {
                     if (customBetAmount != null) {
                       Navigator.of(context)
                           .pop(int.parse(customBetAmount.text));
-                          bool x =true; //TODO
+                      bool x = true; //TODO
                     }
                   })
             ],
@@ -151,6 +146,16 @@ class _LobbyListState extends State<LobbyList> {
   @override
   void initState() {
     super.initState();
+    //
+    clientGameTable = GameTableClient(ClientChannel(ip,
+        port: 5002,
+        options:
+            const ChannelOptions(credentials: ChannelCredentials.insecure())));
+    //
+    clientLobby = LobbyClient(ClientChannel(ip,
+        port: 5001,
+        options:
+            const ChannelOptions(credentials: ChannelCredentials.insecure())));
     getLobby();
   }
 
