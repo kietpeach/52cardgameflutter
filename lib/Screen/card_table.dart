@@ -51,7 +51,21 @@ class _CardTableState extends State<CardTable> {
     0.6
   ];
   List<double> y = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-  bool _disableCard = false;
+  //List<bool> _disableCard = [
+  //   false,
+  //   false,
+  //   false,
+  //   false,
+  //   false,
+  //   false,
+  //   false,
+  //   false,
+  //   false,
+  //   false,
+  //   false,
+  //   false,
+  //   false
+  // ];
   //
   void onTapUp(int index) {
     setState(() {
@@ -60,15 +74,17 @@ class _CardTableState extends State<CardTable> {
   }
 
 //
-  void hitCard(index) {
+  void hitCard(int index) {
     setState(() {
       if (up[index]) {
         x[index] = 0;
         y[index] = 0;
       }
     });
+    // if (x[index] == 0 && y[index] == 0) {
+    //   _disableCard[index] = !_disableCard[index];
+    // }
   }
-
   //
   @override
   void initState() {
@@ -111,18 +127,23 @@ class _CardTableState extends State<CardTable> {
                 child: Stack(
                   children: [
                     for (int i = 0; i < 13; i++)
-                      AnimatedAlign(
-                        duration: Duration(milliseconds: 100),
-                        alignment: Alignment(x[i], up[i] ? (y[i] - 0.1) : y[i]),
-                        child: SizedBox(
-                          height: 80,
-                          width: 60,
-                          child: GestureDetector(
-                            onTap: () {
-                              onTapUp(i);
-                            },
-                            child: Container(
-                              child: handCard[i],
+                      AbsorbPointer(
+                        absorbing: false,
+                        child: AnimatedAlign(
+                          duration: Duration(milliseconds: 100),
+                          alignment:
+                              Alignment(x[i], up[i] ? (y[i] - 0.1) : y[i]),
+                          child: SizedBox(
+                            height: 80,
+                            width: 60,
+                            child: GestureDetector(
+                              onTap: () {
+                                print(i);
+                                onTapUp(i);
+                              },
+                              child: Container(
+                                child: handCard[i],
+                              ),
                             ),
                           ),
                         ),
@@ -144,13 +165,9 @@ class _CardTableState extends State<CardTable> {
                       child: Text('Sort')),
                   ElevatedButton(
                       onPressed: () {
-                        for (int i = 0; i < 13; i++)
-                          setState(() {
-                            if (up[i]) {
-                              x[i] = 0;
-                              y[i] = 0;
-                            }
-                          });
+                        for (int i = 0; i < 13; i++) {
+                          hitCard(i);
+                        }
                       },
                       child: Text('Hit')),
                 ],
