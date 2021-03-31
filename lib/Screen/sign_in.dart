@@ -46,24 +46,25 @@ class _SignInState extends State<SignIn> {
             style: TextStyle(fontFamily: 'Yellowtail'),
           ),
         ),
-        body: Container(
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage('assets/greensc.jpg'), fit: BoxFit.cover)),
-          padding: EdgeInsets.all(14.0),
-          constraints: BoxConstraints.expand(),
-          child: Form(
-            key: _formKey,
-          
+        body: Form(
+          key: _formKey,
+          child: Container(
+            constraints: BoxConstraints.expand(),
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('assets/greensc.jpg'), fit: BoxFit.cover)),
+            padding: EdgeInsets.all(14.0),
+            //constraints: BoxConstraints.expand(),
+            child: SingleChildScrollView(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
                     height: 20.0,
                   ),
                   TextFormField(
                     style: TextStyle(fontWeight: FontWeight.bold),
-                    validator: (val) =>
-                        val.isEmpty ? 'Nhập Email của bạn' : null,
+                    validator: (val) => val.isEmpty ? 'Nhập Email của bạn' : null,
                     onChanged: (val) {
                       setState(() => _email = val);
                     },
@@ -113,7 +114,9 @@ class _SignInState extends State<SignIn> {
                     decoration: textInputDecoration.copyWith(labelText: 'IP:'),
                     controller: ip,
                   ),
-                  Spacer(),
+                  SizedBox(
+                    height: 20.0,
+                  ),
                   RaisedButton(
                     color: Colors.red,
                     child: Text(
@@ -161,7 +164,7 @@ class _SignInState extends State<SignIn> {
                     // }
                   ),
                   SizedBox(
-                    height: 12.0,
+                    height: 200.0,
                   ),
                   Text(
                     _error,
@@ -217,6 +220,7 @@ class _SignInState extends State<SignIn> {
             ),
           ),
         ),
+      ),
     );
   }
 

@@ -55,6 +55,7 @@ class _LobbyListState extends State<LobbyList> {
   Future<int> getReturnCodeCreateLobby() async {
     var response =
         await clientLobby.askCreateRoom(new lobby.AskCreateRoom_Request(
+      //truyền mức cược từ texfield popup vào request create room
       betAmount: int.parse(customBetAmount.text),
       //currencyType: 1,
     ));
