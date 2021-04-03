@@ -1,5 +1,3 @@
-
-
 import 'package:cardgame/Screen/card_table.dart';
 import 'package:cardgame/shared/loading.dart';
 import 'package:cardgame/src/generated/gametable.pbgrpc.dart';
@@ -22,6 +20,7 @@ class _LobbyListState extends State<LobbyList> {
   final String ip;
   _LobbyListState(this.ip);
   //
+  bool x;
   List<LobbyRoom> resultRoomList;
   RoomConnetioninfo resultJoinRoom;
   int returnCodeCreateLobby;
@@ -115,7 +114,7 @@ class _LobbyListState extends State<LobbyList> {
     });
   }
 
-  //method popup bảng tạo lobby
+  //method popup bảng tạo lobby để nhập mức cược
   Future<int> createPopup(BuildContext context) {
     return showDialog(
         context: context,
@@ -132,10 +131,14 @@ class _LobbyListState extends State<LobbyList> {
                   elevation: 5.0,
                   child: Text('Create'),
                   onPressed: () {
-                    if (customBetAmount != null) {
+                    if (customBetAmount != null &&
+                        customBetAmount.text.isNotEmpty) {
+                      //Anh đang trả về customBetAmount.text nên mình sẽ bắt dạng String
                       Navigator.of(context)
                           .pop(int.parse(customBetAmount.text));
-                      bool x = true; //TODO
+                    } else if (customBetAmount == null &&
+                        customBetAmount.text.isEmpty) {
+                      print('nhap tien cuoc vao');
                     }
                   })
             ],
@@ -223,18 +226,26 @@ class _LobbyListState extends State<LobbyList> {
                 child: Text('Create Lobby'),
                 onPressed: () {
                   createPopup(context).then((onValue) async {
-                    await getReturnCodeCreateLobby();
-                    if (returnCodeCreateLobby == 200) {
-                      await getAskJoinRoomTableWhenCreate();
-                      if (returnCodeJoinFromTableWhenCreate == 200) {
-                        Navigator.push(
-                            context,
-                            new MaterialPageRoute(
-                                builder: (context) => CardTable(
-                                      roomID: resultCreateLobby,
-                                      betAmount: onValue,
-                                    )));
+                    // Nếu popup trả về có giá trị thì xử lý
+                    if (onValue != null && onValue != 0) {
+                      await getReturnCodeCreateLobby();
+                      if (returnCodeCreateLobby == 200) {
+                        await getAskJoinRoomTableWhenCreate();
+                        if (returnCodeJoinFromTableWhenCreate == 200) {
+                          Navigator.push(
+                              context,
+                              new MaterialPageRoute(
+                                  builder: (context) => CardTable(
+                                        roomID: resultCreateLobby,
+                                        betAmount: onValue,
+                                      )));
+                        }
                       }
+                    }
+                    //Không trả giá trị gì
+                    else {
+                      print('cancel');
+                      //Làm gì đó
                     }
                   });
                 })
@@ -264,7 +275,9 @@ class _LobbyListState extends State<LobbyList> {
                 }
               }
             },
-            // avata của chủ host leading: ,
+            leading: CircleAvatar(
+              backgroundImage: AssetImage('assets/person-icon.png'),
+            ),
             subtitle:
                 Text('Bet: ${filterRoomList[index].betAmount.toString()}'),
             title: Text('Lobby Name: ${filterRoomList[index].roomId}'),

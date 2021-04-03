@@ -124,6 +124,8 @@ class _SignInState extends State<SignIn> {
                       style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
                     onPressed: () async {
+                      print(_email);
+                      print(_password);
                       if (_formKey.currentState.validate()) {
                         //setState(() => loading = true);
                         var res = await LobbyService.login(ip.text, 5001);
